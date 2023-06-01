@@ -30,6 +30,7 @@ jobs:
           else
             echo "Branch is not INTEG-V2"
             echo "::set-output name=approvals::1"
+          fi
 
       - name: Get PR Reviews
         id: get_reviews
