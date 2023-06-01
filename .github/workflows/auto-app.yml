@@ -49,12 +49,13 @@ jobs:
             const approvals = reviews.filter(review => review.state === 'APPROVED');
             if (approvals.length >= ${{ steps.branch_approvals.outputs.approvals }}) {
               console.log(`Required approvals (${approvals.length}) already met`);
+            } else {
+              github.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                event: 'APPROVE',
+                body: 'Auto-approved due to PR title containing "Syncro"',
+                async: true
+              });
             }
-
-            await github.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              event: 'APPROVE',
-              body: 'Auto-approved due to PR title containing "Syncro"'
-            });
