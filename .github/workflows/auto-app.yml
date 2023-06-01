@@ -47,7 +47,7 @@ jobs:
           script: |
             const reviews = ${{ steps.get_reviews.outputs.response.body }};
             const approvals = reviews.filter(review => review.state === 'APPROVED');
-            if (approvals.length >= ${{ steps.branch_approvals.outputs.approvals }}) {
+            if (approvals.length >= 1) {
               console.log(`Required approvals (${approvals.length}) already met`);
             } else {
               github.pulls.createReview({
