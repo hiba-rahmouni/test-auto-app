@@ -46,15 +46,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const reviews = ${{ toJSON(steps.get_reviews.outputs.response) }};
-            const approvals = reviews.filter(review => review.state === 'APPROVED');
-            if (approvals.length >= 1) {
-              console.log(`Required approvals (${approvals.length}) already met`);
-            } else {
-              await github.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.payload.pull_request.number,
-                event: 'APPROVE',
-                body: 'Auto-approved due to PR title containing "Syncro"',
-              });
-            }
+            if (reviews !== null) {
+              const approvals = reviews.filter(review => review.state === 'APPROVED');
+              if (approvals.length >= 1) {
+                console.log(`Required approvals (${approvals.length}) already met`);
+              } else {
+                await github.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.payload.pull_request.number,
