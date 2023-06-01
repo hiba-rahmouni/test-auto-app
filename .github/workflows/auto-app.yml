@@ -43,7 +43,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const reviews = ${{ steps.get_reviews.outputs.data }};
+            const reviews = ${{ steps.get_reviews.outputs.response.body }};
             const approvals = reviews.filter(review => review.state === 'APPROVED');
             if (approvals.length >= ${{ steps.branch_approvals.outputs.approvals }}) {
               console.log(`Required approvals (${approvals.length}) already met`);
