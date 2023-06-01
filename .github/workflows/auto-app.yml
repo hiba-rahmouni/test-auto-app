@@ -30,7 +30,12 @@ jobs:
           else
             echo "Branch is not INTEG-V2"
             echo "::set-output name=approvals::1"
-          fi
+
+      - name: Get PR Reviews
+        id: get_reviews
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews
 
       - name: Auto Approve PR
         if: ${{ steps.auto_approve.outputs.approval == 'true' }}
@@ -38,13 +43,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { data: pullRequest } = await github.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
-
-            const approvals = pullRequest.reviews.filter(review => review.state === 'APPROVED');
+            const reviews = context.payload;
+            const approvals = reviews.filter(review => review.state === 'APPROVED');
             if (approvals.length >= ${{ steps.branch_approvals.outputs.approvals }}) {
               console.log(`Required approvals (${approvals.length}) already met`);
               return;
