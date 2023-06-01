@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
 
 jobs:
   auto_approve:
@@ -12,7 +13,7 @@ jobs:
       - name: Check PR title for "Syncro"
         id: auto_approve
         run: |
-          if [[ "${{ github.event.pull_request.title }}" == *"Syncro"* ]] ; then
+          if [[ "${{ github.event.pull_request.title }}" == *"Syncro"* ]]; then
             echo "PR title contains 'Syncro'"
             echo "::set-output name=approval::true"
           else
@@ -20,21 +21,44 @@ jobs:
             echo "::set-output name=approval::false"
           fi
 
+      - name: Check branch and approvals
+        id: branch_approvals
+        run: |
+          if [[ "${{ github.event.pull_request.head.ref }}" == "INTEG-V2" ]]; then
+            echo "Branch is INTEG-V2"
+            echo "::set-output name=approvals::2"
+          else
+            echo "Branch is not INTEG-V2"
+            echo "::set-output name=approvals::1"
+          fi
+
+      - name: Get PR Reviews
+        id: get_reviews
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Auto Approve PR
         if: ${{ steps.auto_approve.outputs.approval == 'true' }}
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { data: pullRequest } = await github.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
-            await github.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              event: 'APPROVE',
-              body: 'Auto-approved due to PR title containing "Syncro"'
-            });
+            const reviews = ${{ toJSON(steps.get_reviews.outputs.response) }};
+            if (reviews !== null) {
+              const approvals = reviews.data.filter(review => review.state === 'APPROVED');
+              if (approvals.length >= 1) {
+                console.log(`Required approvals (${approvals.length}) already met`);
+              } else {
+                await github.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.payload.pull_request.number,
+                  event: 'APPROVE',
+                  body: 'Auto-approved due to PR title containing "Syncro"'
+                });
+              }
+            } else {
+              console.log('No reviews found for the pull request');
+            }
