@@ -13,7 +13,7 @@ jobs:
       - name: Check PR title for "Syncro"
         id: auto_approve
         run: |
-          if [[ "${{ github.event.pull_request.title }}" == *"Syncro"* ]]; then
+          if [[ "${{ github.event.pull_request.title }}" == *"Syncro"* ]] ; then
             echo "PR title contains 'Syncro'"
             echo "::set-output name=approval::true"
           else
@@ -24,7 +24,7 @@ jobs:
       - name: Check branch and approvals
         id: branch_approvals
         run: |
-          if [[ "${{ github.event.pull_request.head.ref }}" == "INTEG-V2" ]]; then
+          if [[ "${{ github.event.pull_request.head.ref }}" == "INTEG-V2" ]] ; then
             echo "Branch is INTEG-V2"
             echo "::set-output name=approvals::2"
           else
