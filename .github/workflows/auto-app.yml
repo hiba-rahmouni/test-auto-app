@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
 
 jobs:
   auto_approve:
@@ -20,6 +21,17 @@ jobs:
             echo "::set-output name=approval::false"
           fi
 
+      - name: Check branch and approvals
+        id: branch_approvals
+        run: |
+          if [[ "${{ github.event.pull_request.head.ref }}" == "INTEG-V2" ]] ; then
+            echo "Branch is INTEG-V2"
+            echo "::set-output name=approvals::2"
+          else
+            echo "Branch is not INTEG-V2"
+            echo "::set-output name=approvals::1"
+          fi
+
       - name: Auto Approve PR
         if: ${{ steps.auto_approve.outputs.approval == 'true' }}
         uses: actions/github-script@v4
@@ -31,6 +43,13 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number
             });
+
+            const approvals = pullRequest.reviews.filter(review => review.state === 'APPROVED');
+            if (approvals.length >= ${{ steps.branch_approvals.outputs.approvals }}) {
+              console.log(`Required approvals (${approvals.length}) already met`);
+              return;
+            }
+
             await github.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
