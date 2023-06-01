@@ -5,7 +5,7 @@ on:
     types:
       - opened
       - synchronize
-      
+
 jobs:
   auto_approve:
     runs-on: ubuntu-latest
@@ -13,7 +13,7 @@ jobs:
       - name: Check PR title for "Syncro"
         id: auto_approve
         run: |
-          if [[ "${{ github.event.pull_request.title }}" == *"Syncro"* ]] ; then
+          if [[ "${{ github.event.pull_request.title }}" == *"Syncro"* ]]; then
             echo "PR title contains 'Syncro'"
             echo "::set-output name=approval::true"
           else
@@ -24,19 +24,19 @@ jobs:
       - name: Check branch and approvals
         id: branch_approvals
         run: |
-          if [[ "${{ github.event.pull_request.head.ref }}" == "INTEG-V2" ]] ; then
+          if [[ "${{ github.event.pull_request.head.ref }}" == "INTEG-V2" ]]; then
             echo "Branch is INTEG-V2"
             echo "::set-output name=approvals::2"
           else
             echo "Branch is not INTEG-V2"
             echo "::set-output name=approvals::1"
-          fi
-
       - name: Get PR Reviews
         id: get_reviews
         uses: octokit/request-action@v2.x
         with:
           route: GET /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews
+          mediaType: {}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Auto Approve PR
         if: ${{ steps.auto_approve.outputs.approval == 'true' }}
