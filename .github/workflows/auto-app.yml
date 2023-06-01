@@ -45,12 +45,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const reviews = ${{ steps.get_reviews.outputs.response.body }};
+            const reviews = ${{ steps.get_reviews.outputs.response.data }};
             const approvals = reviews.filter(review => review.state === 'APPROVED');
             if (approvals.length >= 1) {
               console.log(`Required approvals (${approvals.length}) already met`);
             } else {
-              github.pulls.createReview({
+              await github.pulls.createReview({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: context.payload.pull_request.number,
