@@ -5,7 +5,7 @@ on:
     types:
       - opened
       - synchronize
-
+      
 jobs:
   auto_approve:
     runs-on: ubuntu-latest
