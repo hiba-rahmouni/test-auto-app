@@ -30,13 +30,13 @@ jobs:
           else
             echo "Branch is not INTEG-V2"
             echo "::set-output name=approvals::1"
+          fi
+
       - name: Get PR Reviews
         id: get_reviews
         uses: octokit/request-action@v2.x
         with:
           route: GET /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews
-          mediaType: {}
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Auto Approve PR
         if: ${{ steps.auto_approve.outputs.approval == 'true' }}
