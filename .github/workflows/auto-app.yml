@@ -47,7 +47,7 @@ jobs:
           script: |
             const reviews = ${{ toJSON(steps.get_reviews.outputs.response) }};
             if (reviews !== null) {
-              const approvals = reviews.filter(review => review.state === 'APPROVED');
+              const approvals = reviews.data.filter(review => review.state === 'APPROVED');
               if (approvals.length >= 1) {
                 console.log(`Required approvals (${approvals.length}) already met`);
               } else {
@@ -55,3 +55,10 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   pull_number: context.payload.pull_request.number,
+                  event: 'APPROVE',
+                  body: 'Auto-approved due to PR title containing "Syncro"'
+                });
+              }
+            } else {
+              console.log('No reviews found for the pull request');
+            }
